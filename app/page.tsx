@@ -1,101 +1,145 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+
+interface GeneratePromptResponse {
+  prompt: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [genre, setGenre] = useState<string>("Mystery");
+  const [topic, setTopic] = useState<string>("");
+  const [complexity, setComplexity] = useState<number>(3);
+  const [addTwist, setAddTwist] = useState<boolean>(false);
+  const [prompt, setPrompt] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const generatePrompt = async () => {
+    setLoading(true);
+    setPrompt(""); // Reset prompt before loading
+    try {
+      const response = await fetch("/api/generate-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ genre, topic, complexity, addTwist }),
+      });
+      const data: GeneratePromptResponse = await response.json();
+      setPrompt(data.prompt);
+    } catch (error) {
+      console.error("Error generating prompt:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl bg-white/90 backdrop-blur-md shadow-xl">
+        <CardContent className="p-6">
+          <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
+            Creative Writing Prompts
+          </h1>
+
+          <div className="space-y-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Genre</label>
+              <Select value={genre} onValueChange={setGenre}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a genre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mystery">Mystery</SelectItem>
+                  <SelectItem value="Romance">Romance</SelectItem>
+                  <SelectItem value="Sci-Fi">Sci-Fi</SelectItem>
+                  <SelectItem value="Fantasy">Fantasy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Topic</label>
+              <Input
+                type="text"
+                placeholder="Enter a topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Complexity: {complexity}
+              </label>
+              <Slider
+                min={1}
+                max={5}
+                step={1}
+                value={[complexity]}
+                onValueChange={(value) => setComplexity(value[0])}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={addTwist}
+                onCheckedChange={setAddTwist}
+                id="twist-mode"
+              />
+              <label
+                htmlFor="twist-mode"
+                className="text-sm font-medium text-gray-700"
+              >
+                Add a twist
+              </label>
+            </div>
+
+            <Button
+              onClick={generatePrompt}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Prompt"
+              )}
+            </Button>
+          </div>
+
+          {prompt && (
+            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+              <h2 className="text-2xl font-semibold mb-2 text-gray-800">Your Prompt:</h2>
+              <p className="text-gray-700 italic">
+                {prompt.split(/(\*\*.*?\*\*)/).map((part, index) => 
+                  part.startsWith('**') && part.endsWith('**') ? (
+                    <strong key={index} className="font-bold">
+                      {part.slice(2, -2)}
+                    </strong>
+                  ) : (
+                    <span key={index}>{part}</span>
+                  )
+                )}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
