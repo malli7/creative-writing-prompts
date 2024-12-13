@@ -23,8 +23,8 @@ export const POST = async (req: NextRequest) => {
     const generatedPrompt = response.choices[0]?.message?.content?.trim();
 
     return NextResponse.json({ prompt: generatedPrompt });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating prompt:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 };
